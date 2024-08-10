@@ -5,7 +5,7 @@ from urllib.parse import quote_plus
 
 # Escape do nome do usuário e da senha
 username = quote_plus('yasminagostinho012')
-password = quote_plus('N9357iG1m8ifKn5K')
+password = quote_plus('aaaa')
 
 # URL de conexão
 uri = f'mongodb+srv://{username}:{password}@clusterfaculdade.glgbt.mongodb.net/?retryWrites=true&w=majority&appName=ClusterFaculdade'
