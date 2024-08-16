@@ -28,5 +28,5 @@ document = {
 
 # Inserindo documento
 collection.insert_one(document)
-
+print("aaaa")
 print(f"Banco de dados '{database_name}' e coleção '{collection_name}' criados com sucesso!")
