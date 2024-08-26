@@ -5,7 +5,7 @@ from urllib.parse import quote_plus
 import json
 
 # Carregar e ler o arquivo JSON de configuração
-with open('config.json') as config_file:
+with open('../config.json') as config_file:
     config = json.load(config_file)
 
 # Credenciais e URI base
