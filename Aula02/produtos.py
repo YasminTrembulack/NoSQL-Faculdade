@@ -5,7 +5,7 @@ from urllib.parse import quote_plus
 import json 
 
 # Carregar e ler o arquivo JSON
-with open('config.json') as config_file:
+with open('../config.json') as config_file:
     config = json.load(config_file)
 
 # Credenciais e URI base
@@ -17,7 +17,7 @@ username = quote_plus(username)
 password = quote_plus(password)
 
 # URI de conexão
-uri = f"mongodb+srv://{username}:{password}@cluster1.tjqkv.mongodb.net/?retryWrites=true&w=majority&appName=cluster1"
+uri = f'mongodb+srv://{username}:{password}@clusterfaculdade.glgbt.mongodb.net/?retryWrites=true&w=majority&appName=ClusterFaculdade'
 
 # Criar novo cliente e conectar-se ao servidor
 client = MongoClient(uri, server_api=ServerApi('1'))

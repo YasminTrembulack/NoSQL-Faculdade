@@ -2,10 +2,10 @@
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from urllib.parse import quote_plus
-import json 
+import json
 
-# Carregar e ler o arquivo JSON
-with open('../config.json') as config_file:
+# Carregar e ler o arquivo JSON de configuração
+with open('config.json') as config_file:
     config = json.load(config_file)
 
 # Credenciais e URI base
@@ -27,19 +27,19 @@ database_name = 'UniSenai'
 db = client[database_name]
 
 # Definir o nome da coleção
-collection_name = 'disciplinas'
+collection_name = 'jogos'
 collection = db[collection_name]
 
-# Inserir um documento na coleção
-document = {
-    "nome": "Data Science",
-    "código": "DS",
-    "descrição": "Curso introdutório de Ciência de Dados",
-    "professor": "Paulo Moreira",
-    "horário": "Segunda-feira, 19h-22h"
-}
+# Carregar o arquivo JSON com os jogos
+with open('jogos.json', encoding='utf-8') as jogos_file:
+    jogos = json.load(jogos_file)
 
-collection.insert_one(document)
+# Inserir os documentos na coleção
+if isinstance(jogos, list):  # Verifica se a estrutura é uma lista de documentos
+    result = collection.insert_many(jogos)
+    print(f' {len(result.inserted_ids)} documentos inseridos na coleção "{collection_name}" com sucesso!')
+else:
+    print("O arquivo JSON não contém uma lista de documentos.")
 
-# Imprimir mensagem de sucesso
-print(f'Documento "{document}" adicionado à coleção "{collection_name}"!')
+# Fechar a conexão com o MongoDB
+client.close()
