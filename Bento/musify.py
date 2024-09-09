@@ -16,16 +16,16 @@ collection = db['Musica']
 # print(collection.find_one())
 
 document = {
-    "titulo": "",
-    "cantor": "",
-    "duração": "",
-    "ano": 00,
-    "compositor": ["Adam Levine", "Benny Blanco"],
-    "genero": ["Pop", "Rock", "Dance"],
-    "letra": "I'm at a payphone, trying to call home All of my change I spent on you...",
-    "gravadora": "Interscope Records",
-    "album": "Overexposed",
-    "produção": ["Benny Blanco","Shellback"]
+    "titulo": "Título da Música",                                       # Título da música
+    "cantor": "Artista ou Banda que Interpreta a Música",               # Artista ou banda que interpreta a música
+    "duração": "Duração da Música (formato minutos:segundos)",          # Duração da música
+    "ano": 0000,                                                        # Ano de lançamento da música
+    "compositor": ["Nome do Compositor 1", "Nome do Compositor 2"],     # Lista de compositores
+    "genero": ["Gênero Musical 1", "Gênero Musical 2"],                 # Lista de gêneros musicais
+    "letra": "Letra da Música",                                         # Letra da música
+    "gravadora": "Nome da Gravadora",                                   # Gravadora responsável pelo lançamento
+    "album": "Título do Álbum",                                         # Álbum ao qual a música pertence
+    "produção": ["Nome do Produtor 1", "Nome do Produtor 2"]            # Lista de produtores
 }
 
 # result = collection.insert_one(document)
@@ -94,7 +94,39 @@ def BuscarMusica():
     
         
 def DeleteMusica():
-    pass
+    os.system('cls')
+    print("Selecionar por qual campo deseja deletar:")
+    print("1 - Album")
+    print("2 - Titulo")
+    print("3 - Cantor")
+    escolha = input("Selecione uma opção: ")
+
+    campo = ''
+    if escolha == '1':
+        campo = 'album'
+    elif escolha == '2':
+        campo = 'titulo'
+    elif escolha == '3':
+        campo = 'cantor'
+    else:
+        print("Opção inválida.")
+        return DeleteMusica()
+
+    valor = input(f"Digite o valor do {campo} para deletar: ")
+
+    # Confirmar exclusão
+    confirma = input(f"Você tem certeza que deseja excluir os documentos com {campo} = '{valor}'? (s/n): ").lower()
+    if confirma != 's':
+        print("Exclusão cancelada.")
+        return Menu()
+
+    query = {campo: valor}
+    result = collection.delete_many(query)
+    if result.deleted_count > 0:
+        print(f"{result.deleted_count} documento(s) deletado(s) com sucesso!")
+    else:
+        print("Nenhum documento encontrado para deletar.")
+
 
 os.system('cls')
 print("Bem vindo ao Musify!")
