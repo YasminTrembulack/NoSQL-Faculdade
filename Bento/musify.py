@@ -35,17 +35,45 @@ def Menu():
     print("-------- Menu --------")
     print("1 - Adicionar Musica")
     print("2 - Buscar Musica")
-    print("3 - Deletar Musica")
+    print("3 - Listar Musica")
+    print("4 - Deletar Musica")
     print("0 - Sair")
     op = input("Selecione uma opção:")
     
     if op == "0" : return
     elif op == "1" : return AddMusica()
     elif op == "2" : return BuscarMusica()
-    elif op == "3" : return DeleteMusica()
+    elif op == "3" : return ListarMusicas()
+    elif op == "4" : return DeleteMusica()
     else : return Menu()
     
+
+def ListarMusicas():
+    os.system('cls')
+    print("-------- Lista de Músicas --------")
     
+    musicas = collection.find()
+    
+    if collection.count_documents({}) == 0:
+        print("Nenhuma música encontrada.")
+        return Menu()
+
+    for musica in musicas:
+        print(f"Título: {musica.get('titulo', 'N/A')}")
+        print(f"Cantor: {musica.get('cantor', 'N/A')}")
+        print(f"Duração: {musica.get('duração', 'N/A')}")
+        print(f"Ano: {musica.get('ano', 'N/A')}")
+        print(f"Compositores: {(musica.get('compositor', []))}")
+        print(f"Gêneros: {', '.join(musica.get('genero', []))}")
+        print(f"Letra: {musica.get('letra', 'N/A')}")
+        print(f"Gravadora: {musica.get('gravadora', 'N/A')}")
+        print(f"Álbum: {musica.get('album', 'N/A')}")
+        print(f"Produção: {musica.get('produção', [])}")
+        print("-" * 40)
+    
+    input("Pressione Enter para voltar ao menu.")
+    return Menu()
+
     
 def AddMusica():
     os.system('cls')
@@ -89,6 +117,8 @@ def BuscarMusica():
         print(musica)
     else:
         print("Nenhuma música encontrada com o valor fornecido.")
+    time.sleep(2)
+    return Menu()
 
     
     
@@ -123,14 +153,16 @@ def DeleteMusica():
     query = {campo: valor}
     result = collection.delete_many(query)
     if result.deleted_count > 0:
+        print(result)
         print(f"{result.deleted_count} documento(s) deletado(s) com sucesso!")
     else:
         print("Nenhum documento encontrado para deletar.")
+    time.sleep(2)
+    return Menu()
+    
 
 
 os.system('cls')
 print("Bem vindo ao Musify!")
 time.sleep(2)
 Menu()
-
-db.close()
