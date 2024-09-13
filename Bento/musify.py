@@ -121,7 +121,6 @@ def BuscarMusica():
     return Menu()
 
     
-    
         
 def DeleteMusica():
     os.system('cls')
