@@ -4,7 +4,7 @@ from pymongo.server_api import ServerApi
 from urllib.parse import quote_plus
 import json
 import os, time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Carregar e ler o arquivo JSON
 with open('./config.json') as config_file:
@@ -27,10 +27,9 @@ client = MongoClient(uri, server_api=ServerApi('1'))
 try:
   client.admin.command('ping')
   print("You successfully connected to MongoDB!")
-  time.sleep(2)
 except Exception as e:
   print("Error connect to MongoDB...")
-  print(e)
+  time.sleep(2)
 
 # Definir o nome do banco de dados
 database_name = 'Livraria'
@@ -75,16 +74,14 @@ def Menu():
   print("3. Emprestimo")
   print("0. Sair")
   print("------------------------")
+  
   op = input("Digite a opção desejada: ")
-  if op == "1":
-    return MenuUser()
-  elif op == "2":
-    return MenuLivro()
-  elif op == "3":
-    return MenuEmprestimo()
-  elif op == "0":
-    return
-  else:
+  
+  if   op == "1": return MenuUser()
+  elif op == "2": return MenuLivro()
+  elif op == "3": return MenuEmprestimo()
+  elif op == "0": return
+  else: 
     print("Opção inválida. Tente novamente...")
     time.sleep(2)
     return Menu()
@@ -101,18 +98,13 @@ def MenuUser():
   print("-----------------------------")
 
   op = input("Digite a opção desejada: ")
-  if op == "1":
-    return CadastrarUser()
-  elif op == "2":
-    return DeletarUser()
-  elif op == "3":
-    return AtualizarUser()
-  elif op == "4":
-    return RelatoriosUser()
-  elif op == "5":
-    return EmprestimoUser()
-  elif op == "0":
-    return Menu()
+  
+  if   op == "1": return CadastrarUser()
+  elif op == "2": return DeletarUser()
+  elif op == "3": return AtualizarUser()
+  elif op == "4": return RelatoriosUser()
+  elif op == "5": return EmprestimoUser()
+  elif op == "0": return Menu()
   else:
     print("Opção inválida. Tente novamente...")
     time.sleep(2)
@@ -130,18 +122,13 @@ def MenuLivro():
   print("------------------------------")
 
   op = input("Digite a opção desejada: ")
-  if op == "1":
-    return CadastrarLivro()
-  elif op == "2":
-    return DeletarLivro()
-  elif op == "3":
-    return AtualizarLivro()
-  elif op == "4":
-    return ListarLivrosDisponiveis()
-  elif op == "5":
-    return RelatorioLivros()
-  elif op == "0":
-    return Menu()
+  
+  if   op == "1": return CadastrarLivro()
+  elif op == "2": return DeletarLivro()
+  elif op == "3": return AtualizarLivro()
+  elif op == "4": return ListarLivrosDisponiveis()
+  elif op == "5": return RelatorioLivros()
+  elif op == "0": return Menu()
   else:
     print("Opção inválida. Tente novamente...")
     time.sleep(2)
@@ -158,16 +145,12 @@ def MenuEmprestimo():
   print("-----------------------------------")
 
   op = input("Digite a opção desejada: ")
-  if op == "1":
-    return EmprestarLivro()
-  elif op == "2":
-    return DevolverLivro()
-  elif op == "3":
-    return EmprestimosVencidos()
-  elif op == "4":
-    return BuscarEmprestimoData()
-  elif op == "0":
-    return Menu()
+  
+  if   op == "1": return EmprestarLivro()
+  elif op == "2": return DevolverLivro()
+  elif op == "3": return EmprestimosVencidos()
+  elif op == "4": return BuscarEmprestimoData()
+  elif op == "0": return Menu()
   else:
     print("Opção inválida. Tente novamente...")
     time.sleep(2)
@@ -179,19 +162,22 @@ def MenuEmprestimo():
 # ------------------------- Livro -------------------------
 def CadastrarLivro():
   os.system("cls")
+  
+  livro_data_local = livro_data.copy()
+  
   for chave in livro_data:
-    novo_valor = input(f"Insira o valor para {chave} ({livro_data[chave]}): ")
+    novo_valor = input(f"Insira o valor para {chave} ({livro_data_local[chave]}): ")
 
     if chave in ['ano_publicacao', 'qtd']:
       novo_valor = int(novo_valor) 
     elif chave == 'genero':
       novo_valor = [item.strip() for item in novo_valor.split(',')]  
 
-    livro_data[chave] = novo_valor
+    livro_data_local[chave] = novo_valor
   try:
-    collectionLivro.insert_one(livro_data)
+    collectionLivro.insert_one(livro_data_local)
     print("Livro adicionado com sucesso!")
-  except error:
+  except Exception as e:
     print("Erro ao adicionar livro.")
   time.sleep(2)
   return MenuLivro()
@@ -221,14 +207,17 @@ def RelatorioLivros():
 # ------------------------- User -------------------------
 def CadastrarUser():
   os.system("cls")
+  
+  usuario_data_local = usuario_data.copy()
+  
   for chave in usuario_data:
-    novo_valor = input(f"Insira o valor para {chave} ({usuario_data[chave]}): ")
+    novo_valor = input(f"Insira o valor para {chave} ({usuario_data_local[chave]}): ")
 
-    usuario_data[chave] = novo_valor
+    usuario_data_local[chave] = novo_valor
   try:
-    collectionUser.insert_one(usuario_data)
+    collectionUser.insert_one(usuario_data_local)
     print("Usuário adicionado com sucesso!")
-  except error:
+  except Exception as e:
     print("Erro ao adicionar usuário.")
   time.sleep(2)
   return MenuUser()
@@ -259,52 +248,200 @@ def EmprestimoUser():
 # ------------------------- Emprestimo -------------------------
 def EmprestarLivro():
   os.system("cls")
-  for chave in emprestimo_data:
-    if chave == 'data_emprestado':
-      emprestimo_data[chave] = datetime.now()
-      continue
-    
+  
+  emprestimo_data_local = emprestimo_data.copy()
+  
+  # Atualizando as datas
+  data_atual = datetime.now()
+  emprestimo_data_local['data_emprestado'] = data_atual
+  emprestimo_data_local['data_entrega'] = data_atual + timedelta(days=7)
+  emprestimo_data_local['data_devolvido'] = None
+
+  # Coletando informações do livro e do usuário
+  for chave in ['livro', 'user']:
+      busca = input(f"Insira o valor para {chave} ({emprestimo_data_local[chave]}): ")
       
-    
-    busca = input(f"Insira o valor para {chave} ({emprestimo_data[chave]}): ")
-    if chave == 'livro':
-      novo_valor = findInCollection('Livro', '_id', busca)
-      
-    emprestimo_data[chave] = novo_valor
+      # Buscando o livro ou o usuário na coleção
+      novo_valor = findInCollection('Livro' if chave == 'livro' else 'User', '_id', busca)
+
+      # Verificando se o livro está disponível
+      if chave == 'livro':
+          if novo_valor['qtd'] == 0:
+              print("Livro sem exemplares disponíveis.")
+              time.sleep(2)
+              return MenuEmprestimo()
+
+      if novo_valor is None:
+          print(f"{chave.capitalize()} não encontrado.")
+          time.sleep(2)
+          return MenuEmprestimo()
+
+      emprestimo_data_local[chave] = novo_valor
+
+  # Registrando o empréstimo
   try:
-    collectionUser.insert_one(emprestimo_data)
-    print("Usuário adicionado com sucesso!")
-  except error:
-    print("Erro ao adicionar usuário.")
+    collectionEmprestimo.insert_one(emprestimo_data_local)
+    
+    # Atualiza a quantidade do livro
+    collectionLivro.update_one(
+      {'_id': emprestimo_data_local['livro']['_id']},  # Usando o ISBN diretamente
+      {'$inc': {'qtd': - 1}}  # Decrementa a quantidade em 1
+    )
+    
+    print("Empréstimo realizado com sucesso!")
+  except Exception as e:
+    print(f"Erro ao emprestar livro: {e}")
+
   time.sleep(2)
-  return MenuUser()
-  # • Verificar se há exemplares disponíveis do livro
-  # • Registrar o empréstimo, associando o livro ao usuário
-  # • Atualizar a quantidade de exemplares disponíveis
-  # • Registrar a data do empréstimo e a data prevista de devolução
-  pass
+  return MenuEmprestimo()
 
 
 def DevolverLivro():
   os.system("cls")
-  # • Atualizar a quantidade de exemplares disponíveis do livro
-  # • Registrar a data de devolução.
-  pass
+  # Solicitar o CPF do usuário
+  cpf_usuario = input("Insira o CPF do usuário: ")
+
+  # Buscar o usuário pelo CPF
+  usuario = collectionUser.find_one({'_id': cpf_usuario})
+  
+  if not usuario:
+    print("Usuário não encontrado.")
+    time.sleep(2)
+    return MenuEmprestimo()
+
+  # Buscar empréstimos em aberto do usuário
+  emprestimos_abertos = collectionEmprestimo.find({
+    'user': usuario,
+    'data_devolvido': None  # Apenas os empréstimos ainda não devolvidos
+  })
+
+  # Verificar se existem empréstimos em aberto
+  emprestimos = list(emprestimos_abertos)
+  if not emprestimos:
+    print("Nenhum empréstimo em aberto encontrado para este usuário.")
+    time.sleep(2)
+    return MenuEmprestimo()
+
+  # Listar os empréstimos em aberto
+  print("Empréstimos em aberto:")
+  for idx, emprestimo in enumerate(emprestimos):
+    print(f"{idx + 1}. Livro: {emprestimo['livro']['_id']} - {emprestimo['livro']['titulo']} - {emprestimo['livro']['autor']}, Data de Entrega: {emprestimo['data_entrega']}")
+
+  # Solicitar o número do empréstimo a ser devolvido
+  indice = int(input("Escolha o número do empréstimo a ser devolvido: ")) - 1
+  if indice < 0 or indice >= len(emprestimos):
+    print("Opção inválida.")
+    time.sleep(2)
+    return DevolverLivro()
+
+  # Obter os dados do empréstimo selecionado
+  emprestimo_selecionado = emprestimos[indice]
+  livro_isbn = emprestimo_selecionado['livro']['_id']
+
+  # Atualizar a quantidade de exemplares disponíveis do livro
+  try:
+    collectionLivro.update_one(
+      {'_id': livro_isbn},
+      {'$inc': {'qtd': 1}}  # Incrementa a quantidade em 1
+    )
+
+    # Registrar a data de devolução
+    collectionEmprestimo.update_one(
+      {'_id': emprestimo_selecionado['_id']},
+      {'$set': {'data_devolvido': datetime.now()}}  # Define a data de devolução como agora
+    )
+
+    print("Devolução registrada com sucesso!")
+      
+  except Exception as e:
+    print(f"Erro ao devolver o livro: {e}")
+
+  time.sleep(2)
+  return MenuEmprestimo()
 
 
 def EmprestimosVencidos():
-  # • Consultar usuários com empréstimos vencidos
   os.system("cls")
-  pass
+  print("--------- Empréstimos Vencidos ---------")
+  
+  # Obtendo a data atual
+  data_atual = datetime.now()
+  
+  # Buscando empréstimos vencidos
+  emprestimos_vencidos = collectionEmprestimo.find({
+      'data_entrega': {'$lt': data_atual},
+      'data_devolvido': None  # Verifica se ainda não foi devolvido
+  })
+
+  # Exibindo os resultados
+  found = False
+  for emprestimo in emprestimos_vencidos:
+    found = True
+    print(f"Livro: {emprestimo['livro']['_id']} - {emprestimo['livro']['titulo']} - {emprestimo['livro']['autor']}")
+    print(f"Usuário: {emprestimo['user']['_id']} - {emprestimo['user']['nome']}")
+    print(f"Data Emprestado: {emprestimo['data_emprestado']}")
+    print(f"Data Entrega: {emprestimo['data_entrega']}")
+    print("-----------------------------------")
+
+  if not found:
+    print("Nenhum empréstimo vencido encontrado.")
+
+  input('Digite qualquer tecla para continuar...')
+  return MenuEmprestimo()
   
 
 def BuscarEmprestimoData():
-  # • Relatório de todos os empréstimos realizados em um período de tempo específico
   os.system("cls")
-  pass
+  
+  # Solicitar datas de início e fim
+  data_inicio_str = input("Insira a data de início (YYYY-MM-DD): ")
+  data_fim_str = input("Insira a data de fim (YYYY-MM-DD): ")
+
+  # Converter as strings de data para objetos datetime
+  try:
+    data_inicio = datetime.strptime(data_inicio_str, '%Y-%m-%d')
+    data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d')
+  except ValueError:
+    print("Formato de data inválido. Use YYYY-MM-DD.")
+    time.sleep(2)
+    return MenuEmprestimo()
+
+  # Garantir que a data de início seja menor que a data de fim
+  if data_inicio > data_fim:
+    print("A data de início deve ser anterior à data de fim.")
+    time.sleep(2)
+    return MenuEmprestimo()
+
+  # Buscar empréstimos no intervalo de datas
+  emprestimos = collectionEmprestimo.find({
+    'data_emprestado': {
+      '$gte': data_inicio,  # Maior ou igual à data de início
+      '$lte': data_fim      # Menor ou igual à data de fim
+    }
+  })
+
+  # Exibir resultados
+  emprestimos_list = list(emprestimos)
+  if not emprestimos_list:
+    print("Nenhum empréstimo encontrado no período especificado.")
+  else:
+    os.system("cls")
+    print("--------- Empréstimos Encontrados ---------")
+    for emprestimo in emprestimos_list:
+      print(f"Livro: {emprestimo['livro']['_id']} - {emprestimo['livro']['titulo']} - {emprestimo['livro']['autor']},")
+      print(f'Usuário: {emprestimo['user']['_id']} - {emprestimo['user']['nome']},')
+      print(f"Data Emprestado: {emprestimo['data_emprestado']},")
+      print(f"Data Entrega: {emprestimo['data_entrega']},")
+      print(f"Data Devolvido: {emprestimo['data_devolvido']}")
+      print("------------------------------------------")
+
+      
+      
+  input('Digite qualquer tecla para continuar...')
+  return MenuEmprestimo()
 
 
-def findInCollection(collection, coluna, value):
+def findInCollection(collection_name, field_name, value):
   # Obter a collection
   collection = db[collection_name]
 
@@ -313,11 +450,8 @@ def findInCollection(collection, coluna, value):
   
   # Procurar o primeiro documento que corresponda à consulta
   result = collection.find_one(query)
-
-  # Verificar se encontrou o resultado
-  if result:
-    return result
-  else:
-    return None
+  
+  return result
+  
 
 Menu()
