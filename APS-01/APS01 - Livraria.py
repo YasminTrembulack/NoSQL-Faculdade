@@ -4,6 +4,7 @@ from pymongo.server_api import ServerApi
 from urllib.parse import quote_plus
 import json
 import os, time
+from datetime import datetime
 
 # Carregar e ler o arquivo JSON
 with open('./config.json') as config_file:
@@ -25,8 +26,10 @@ client = MongoClient(uri, server_api=ServerApi('1'))
 
 try:
   client.admin.command('ping')
-  print("Pinged your deployment. You successfully connected to MongoDB!")
+  print("You successfully connected to MongoDB!")
+  time.sleep(2)
 except Exception as e:
+  print("Error connect to MongoDB...")
   print(e)
 
 # Definir o nome do banco de dados
@@ -40,24 +43,24 @@ collectionEmprestimo = db['Emprestimo']
 
 # Definir o atributos das coleção
 livro_data = {
-  'isbn' : 'Codigo unico', 
+  '_id' : 'ISBN - Codigo unico', 
   'titulo': 'Titulo do livro', 
   'autor': 'Autor do livro', 
-  'genero' : ['Generos01', 'Generos02'], 
+  'genero' : 'Digite os generos separados por virgula', 
   'ano_publicacao': 'Ano de publicação', 
   'qtd': 'Quantidade de exemplares no estoque'
 }
 
 usuario_data = {
+  '_id': 'CPF do usuario',
   'nome' : 'Nome completo', 
   'email': 'Email para login', 
-  'nascimento': 'Data de nascimento', 
-  'cpf' : 'CPF do usuario'
+  'nascimento': 'Data de nascimento'
 }
 
 emprestimo_data = {
-  'livro': 'Livro emprestado', 
-  'user' : 'Usuario responsável pelo emprestimo', 
+  'livro': 'ISBN do Livro emprestado', 
+  'user' : 'CPF do Usuario responsável pelo emprestimo', 
   'data_emprestado': 'Data de emprestimo', 
   'data_entrega': 'Data prevista de devolução', 
   'data_devolvido': 'Data de devolução'
@@ -86,11 +89,10 @@ def Menu():
     time.sleep(2)
     return Menu()
 
-
 def MenuUser():
   os.system("cls")
   print("--------- Menu User ---------")
-  print("1. Cadastrar User")
+  print("1. Cadastrar User") # OK
   print("2. Deletar User")
   print("3. Atualizar User")
   print("4. Relatórios Users")
@@ -116,11 +118,10 @@ def MenuUser():
     time.sleep(2)
     return MenuUser()
 
-
 def MenuLivro():
   os.system("cls")
   print("--------- Menu Livro ---------")
-  print("1. Cadastrar Livro")
+  print("1. Cadastrar Livro") # OK
   print("2. Deletar Livro")
   print("3. Atualizar Livro")
   print("4. Listar Livro Disponiveis")
@@ -175,14 +176,13 @@ def MenuEmprestimo():
 
 
 
-
 # ------------------------- Livro -------------------------
 def CadastrarLivro():
   os.system("cls")
   for chave in livro_data:
     novo_valor = input(f"Insira o valor para {chave} ({livro_data[chave]}): ")
 
-    if chave in ['ano']:
+    if chave in ['ano_publicacao', 'qtd']:
       novo_valor = int(novo_valor) 
     elif chave == 'genero':
       novo_valor = [item.strip() for item in novo_valor.split(',')]  
@@ -190,11 +190,11 @@ def CadastrarLivro():
     livro_data[chave] = novo_valor
   try:
     collectionLivro.insert_one(livro_data)
-    print("Musica adicionada com sucesso!")
+    print("Livro adicionado com sucesso!")
   except error:
-    print("Erro ao adicionar musica.")
-  return
-
+    print("Erro ao adicionar livro.")
+  time.sleep(2)
+  return MenuLivro()
 
 
 def DeletarLivro():
@@ -221,7 +221,17 @@ def RelatorioLivros():
 # ------------------------- User -------------------------
 def CadastrarUser():
   os.system("cls")
-  pass
+  for chave in usuario_data:
+    novo_valor = input(f"Insira o valor para {chave} ({usuario_data[chave]}): ")
+
+    usuario_data[chave] = novo_valor
+  try:
+    collectionUser.insert_one(usuario_data)
+    print("Usuário adicionado com sucesso!")
+  except error:
+    print("Erro ao adicionar usuário.")
+  time.sleep(2)
+  return MenuUser()
 
 
 def DeletarUser():
@@ -249,6 +259,24 @@ def EmprestimoUser():
 # ------------------------- Emprestimo -------------------------
 def EmprestarLivro():
   os.system("cls")
+  for chave in emprestimo_data:
+    if chave == 'data_emprestado':
+      emprestimo_data[chave] = datetime.now()
+      continue
+      
+    
+    busca = input(f"Insira o valor para {chave} ({emprestimo_data[chave]}): ")
+    if chave == 'livro':
+      novo_valor = findInCollection('Livro', '_id', busca)
+      
+    emprestimo_data[chave] = novo_valor
+  try:
+    collectionUser.insert_one(emprestimo_data)
+    print("Usuário adicionado com sucesso!")
+  except error:
+    print("Erro ao adicionar usuário.")
+  time.sleep(2)
+  return MenuUser()
   # • Verificar se há exemplares disponíveis do livro
   # • Registrar o empréstimo, associando o livro ao usuário
   # • Atualizar a quantidade de exemplares disponíveis
@@ -273,3 +301,22 @@ def BuscarEmprestimoData():
   # • Relatório de todos os empréstimos realizados em um período de tempo específico
   os.system("cls")
   pass
+
+
+def findInCollection(collection, coluna, value):
+  # Obter a collection
+  collection = db[collection_name]
+
+  # Criar consulta para buscar o valor em um campo específico
+  query = {field_name: value}
+  
+  # Procurar o primeiro documento que corresponda à consulta
+  result = collection.find_one(query)
+
+  # Verificar se encontrou o resultado
+  if result:
+    return result
+  else:
+    return None
+
+Menu()
