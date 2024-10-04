@@ -193,14 +193,50 @@ def AtualizarLivro():
   pass
 
 def ListarLivrosDisponiveis():
-  # • Listar livros disponíveis para empréstimo
   os.system("cls")
-  pass
+  # Buscar todos os livros com quantidade maior que zero
+  livros_disponiveis = collectionLivro.find({'qtd': {'$gt': 0}})
+  
+  # Verificar se existem livros disponíveis
+  livros = list(livros_disponiveis)
+  if not livros:
+    print("Não há livros disponíveis para empréstimo.")
+  else:
+    print("--------- Relatório de Livros ---------")
+    for livro in livros:
+      print(f"ISBN: {livro['_id']}")
+      print(f"Título: {livro['titulo']}")
+      print(f"Autor: {livro['autor']}")
+      print(f"Gêneros: {', '.join(livro['genero'])}")
+      print(f"Ano de Publicação: {livro['ano_publicacao']}")
+      print(f"Quantidade Disponível: {livro['qtd']}")
+      print("---------------------------------------")
+  input("Digite qualquer tecla para continuar...")
+  return MenuLivro()
+
 
 def RelatorioLivros():
-  # • Relatório de todos os livros cadastrados
   os.system("cls")
-  pass
+  # Buscar todos os livros com quantidade maior que zero
+  livros_data = collectionLivro.find()
+  
+  # Verificar se existem livros
+  livros = list(livros_data)
+  if not livros:
+    print("Nenhum livro encontrado.")
+  else:
+    print("--------- Relatório de Livros ---------")
+    for livro in livros:
+      print(f"ISBN: {livro['_id']}")
+      print(f"Título: {livro['titulo']}")
+      print(f"Autor: {livro['autor']}")
+      print(f"Gêneros: {', '.join(livro['genero'])}")
+      print(f"Ano de Publicação: {livro['ano_publicacao']}")
+      print(f"Quantidade Disponível: {livro['qtd']}")
+      print("---------------------------------------")
+  
+  input("Digite qualquer tecla para continuar...")
+  return MenuLivro()
 
 
 
@@ -225,7 +261,36 @@ def CadastrarUser():
 
 def DeletarUser():
   os.system("cls")
-  pass
+  
+  # Solicitar o CPF do usuário a ser deletado
+  cpf = input("Insira o CPF do usuário que deseja deletar: ")
+  
+  # Verificar se o usuário existe
+  usuario = findInCollection('User', '_id', cpf)
+  
+  if usuario is None:
+    print("Usuário não encontrado.")
+    time.sleep(2)
+    return MenuUser()
+  
+  # Confirmar a deleção
+  confirmar = input(f"Tem certeza que deseja deletar o usuário '{usuario['nome']}' e seus empréstimos? (s/n): ")
+  
+  if confirmar.lower() == 's':
+    try:
+      # Deletar empréstimos associados ao usuário
+      collectionEmprestimo.delete_many({'user': usuario})
+      # Deletar o usuário
+      collectionUser.delete_one({'_id': cpf})
+      print("Usuário e seus empréstimos deletados com sucesso!")
+    except Exception as e:
+      print(f"Erro ao deletar usuário e seus empréstimos: {e}")
+  else:
+    print("Operação cancelada.")
+  
+  time.sleep(2)
+  return MenuUser()
+
 
 
 def AtualizarUser():
@@ -234,9 +299,30 @@ def AtualizarUser():
 
 
 def RelatoriosUser():
-   # • Relatório de todos os usuários cadastrados
   os.system("cls")
-  pass
+  
+  # Buscar todos os usuários na coleção
+  usuarios = collectionUser.find()
+  
+  # Verificar se existem usuários
+  users = list(usuarios)
+  if not users:
+    print("Nenhum usuário encontrado.")
+    time.sleep(2)
+    return MenuUser()
+    
+  else:
+    print("--------- Relatório de Usuários ---------")
+    for usuario in users:
+      print(f"CPF: {usuario['_id']}")
+      print(f"Nome: {usuario['nome']}")
+      print(f"Email: {usuario['email']}")
+      print(f"Data de Nascimento: {usuario['nascimento']}")
+      print("---------------------------------------")
+  
+  input("Digite qualquer tecla para continuar...")
+  return MenuUser()
+
 
 
 def EmprestimoUser():
