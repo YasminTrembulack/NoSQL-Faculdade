@@ -263,6 +263,7 @@ def EmprestarLivro():
     if chave == 'data_emprestado':
       emprestimo_data[chave] = datetime.now()
       continue
+    
       
     
     busca = input(f"Insira o valor para {chave} ({emprestimo_data[chave]}): ")
